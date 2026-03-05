@@ -5,13 +5,15 @@ on:
   schedule:
     - cron: '0 6 * * 1' # Every Monday at 6am UTC
 
+permissions:
+  workflows: write
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
     if: github.repository_owner == 'gounthar'
     steps:
       - name: Checkout
