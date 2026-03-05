@@ -743,7 +743,11 @@ do_preflight() {
         if command -v "$cmd" &>/dev/null; then
             log "  $cmd: OK ($(command -v "$cmd"))"
         else
-            log "  $cmd: MISSING — install with: sudo apt-get install $cmd"
+            if [ "$cmd" = "scw" ]; then
+                log "  $cmd: MISSING — install from: https://github.com/scaleway/scaleway-cli#installation"
+            else
+                log "  $cmd: MISSING — install with: sudo apt-get install $cmd"
+            fi
             ok=false
         fi
     done
