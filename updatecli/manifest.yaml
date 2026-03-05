@@ -8,16 +8,19 @@ scms:
       owner: "gounthar"
       repository: "xcp-ng-scaleway-elastic-metal"
       branch: "main"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
 
 sources:
   xcpng:
-    name: "Get latest XCP-ng 8.3 ISO build"
-    kind: shell
+    name: "Get latest XCP-ng release"
+    kind: githubrelease
     spec:
-      command: >-
-        curl -sfL https://mirrors.xcp-ng.org/isos/8.3/ |
-        grep -oP 'xcp-ng-\K[0-9]+\.[0-9]+\.[0-9]+-[0-9]+(?=-netinstall\.iso)' |
-        sort -t- -k2 -n | tail -1
+      owner: "xcp-ng"
+      repository: "xcp"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: regex
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$'
 
 targets:
   version-env:
