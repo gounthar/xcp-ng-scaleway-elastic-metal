@@ -144,8 +144,8 @@ log "=== Step 0: Validate environment ==="
 
 if [ -z "$REAL_IP" ] || [ -z "$REAL_GATEWAY" ]; then
     die "REAL_IP and REAL_GATEWAY must be set. Example:
-  export REAL_IP=51.159.106.5
-  export REAL_GATEWAY=51.159.106.1
+  export REAL_IP=203.0.113.10
+  export REAL_GATEWAY=203.0.113.1
   bash install-via-qemu.sh"
 fi
 
