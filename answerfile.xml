@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<installation srtype="ext">
+
+  <!-- Packages served via HTTP from rescue host (10.0.2.2 = QEMU SLIRP host) -->
+  <!-- The full ISO is extracted on the host and served via python3 -m http.server -->
+  <!-- This avoids the Xen dom0 CD-ROM visibility problem entirely -->
+  <source type="url">http://10.0.2.2:8099/</source>
+
+  <!-- Install on virtio disk (appears as vda inside QEMU, real disk on bare metal) -->
+  <!-- IMPORTANT: QEMU virtio passthrough presents disks as /dev/vda, not /dev/sda -->
+  <primary-disk>vda</primary-disk>
+
+  <!-- US keyboard -->
+  <keymap>us</keymap>
+
+  <!-- Root password (SHA-512 hashed) — inject at build time or override via env -->
+  <!-- Default: "changeme" — replace before production use! -->
+  <!-- Generate with: openssl passwd -6 'YOUR_PASSWORD' -->
+  <root-password type="hash">@@ROOT_PASSWORD_HASH@@</root-password>
+
+  <!-- QEMU SLIRP networking: eth0/DHCP gives 10.0.2.15 with NAT internet access -->
+  <!-- Post-install: reconfigure to real NIC (eno1) with static IP via xe CLI -->
+  <admin-interface name="eth0" proto="dhcp"/>
+
+  <!-- QEMU SLIRP DNS proxy -->
+  <name-server>10.0.2.3</name-server>
+
+  <hostname>xcp-ng-poc</hostname>
+  <timezone>Europe/Paris</timezone>
+  <ntp-server>pool.ntp.org</ntp-server>
+
+  <bootloader location="mbr">grub2</bootloader>
+  <network-backend>vswitch</network-backend>
+
+</installation>
