@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      workflows: write
     if: github.repository_owner == 'gounthar'
     steps:
       - name: Checkout
