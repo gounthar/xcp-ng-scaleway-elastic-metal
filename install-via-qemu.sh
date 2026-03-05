@@ -72,6 +72,8 @@ set -euo pipefail
 #     Must set GRUB default to first Xen entry after generating grub.cfg.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+export XCP_NG_VERSION="${XCP_NG_VERSION:-8.3.0-20250606}"
+XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # 8.3.0-20250606 → 8.3
 LOG_FILE="/tmp/xcp-ng-install.log"
 SERIAL_LOG="/tmp/qemu-xcpng-serial.log"
 WORK_DIR="${WORK_DIR:-$SCRIPT_DIR}"
@@ -296,7 +298,7 @@ fi
 export WORK="$WORK_DIR"
 bash "$WORK_DIR/build-iso.sh" 2>&1 | tee -a "$LOG_FILE"
 
-ISO_FILE="$WORK_DIR/xcp-ng-8.3-unattended.iso"
+ISO_FILE="$WORK_DIR/xcp-ng-${XCP_NG_MAJOR}-unattended.iso"
 if [ ! -f "$ISO_FILE" ]; then
     die "ISO build failed — $ISO_FILE not found"
 fi

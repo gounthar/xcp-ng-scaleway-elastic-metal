@@ -1,0 +1,41 @@
+name: "Bump XCP-ng ISO version"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "updatecli-bot"
+      owner: "gounthar"
+      repository: "xcp-ng-scaleway-elastic-metal"
+      branch: "main"
+
+sources:
+  xcpng:
+    name: "Get latest XCP-ng 8.3 ISO build"
+    kind: shell
+    spec:
+      command: >-
+        curl -sfL https://mirrors.xcp-ng.org/isos/8.3/ |
+        grep -oP 'xcp-ng-\K8\.3\.0-[0-9]+(?=-netinstall\.iso)' |
+        sort -t- -k2 -n | tail -1
+
+targets:
+  build-iso:
+    name: "Update XCP_NG_VERSION default in build-iso.sh"
+    kind: file
+    sourceid: xcpng
+    scmid: default
+    spec:
+      file: build-iso.sh
+      matchpattern: 'XCP_NG_VERSION="\$\{XCP_NG_VERSION:-(.+)\}"'
+      replacepattern: 'XCP_NG_VERSION="${XCP_NG_VERSION:-{{ source "xcpng" }}}"'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      title: 'chore(deps): bump XCP-ng to {{ source "xcpng" }}'
+      labels:
+        - dependencies
+        - automation

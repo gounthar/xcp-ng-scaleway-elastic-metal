@@ -26,6 +26,16 @@ ZONE=fr-par-1 ./provision-scaleway.sh --full
 ./setup-vms.sh <server-ip>
 ```
 
+## XCP-ng version
+
+The XCP-ng version is controlled by a single variable (`XCP_NG_VERSION`). The major version for mirror URLs is derived automatically. To use a different build:
+
+```bash
+XCP_NG_VERSION=8.3.0-20250710 ./provision-scaleway.sh --full
+```
+
+An [updatecli](https://www.updatecli.io/) manifest in `updatecli/manifest.yaml` can automatically detect new builds on the XCP-ng mirror and open a PR to bump the version.
+
 ## Requirements
 
 - Scaleway account with Elastic Metal access
