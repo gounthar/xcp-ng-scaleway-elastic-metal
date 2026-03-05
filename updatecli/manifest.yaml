@@ -16,19 +16,19 @@ sources:
     spec:
       command: >-
         curl -sfL https://mirrors.xcp-ng.org/isos/8.3/ |
-        grep -oP 'xcp-ng-\K8\.3\.0-[0-9]+(?=-netinstall\.iso)' |
+        grep -oP 'xcp-ng-\K[0-9]+\.[0-9]+\.[0-9]+-[0-9]+(?=-netinstall\.iso)' |
         sort -t- -k2 -n | tail -1
 
 targets:
-  build-iso:
-    name: "Update XCP_NG_VERSION default in build-iso.sh"
+  version-env:
+    name: "Update XCP_NG_VERSION in xcp-ng-version.env"
     kind: file
     sourceid: xcpng
     scmid: default
     spec:
-      file: build-iso.sh
-      matchpattern: 'XCP_NG_VERSION="\$\{XCP_NG_VERSION:-(.+)\}"'
-      replacepattern: 'XCP_NG_VERSION="${XCP_NG_VERSION:-{{ source "xcpng" }}}"'
+      file: xcp-ng-version.env
+      matchpattern: 'XCP_NG_VERSION=(.*)'
+      replacepattern: 'XCP_NG_VERSION={{ source "xcpng" }}'
 
 actions:
   default:

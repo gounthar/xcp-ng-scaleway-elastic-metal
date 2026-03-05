@@ -28,7 +28,7 @@ ZONE=fr-par-1 ./provision-scaleway.sh --full
 
 ## XCP-ng version
 
-The XCP-ng version is controlled by a single variable (`XCP_NG_VERSION`). The major version for mirror URLs is derived automatically. To use a different build:
+The XCP-ng version lives in `xcp-ng-version.env`, sourced by all scripts. The major version for mirror URLs is derived automatically. To use a different build:
 
 ```bash
 XCP_NG_VERSION=8.3.0-20250710 ./provision-scaleway.sh --full

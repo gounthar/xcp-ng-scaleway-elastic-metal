@@ -31,10 +31,16 @@ set -euo pipefail
 
 WORK="${WORK:-/work}"
 
-# XCP-ng version — single source of truth
+# XCP-ng version — loaded from xcp-ng-version.env (single source of truth)
 # Override via env: XCP_NG_VERSION=8.3.0-20250710 bash build-iso.sh
-XCP_NG_VERSION="${XCP_NG_VERSION:-8.3.0-20250606}"
-XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # 8.3.0-20250606 → 8.3
+if [ -z "${XCP_NG_VERSION:-}" ]; then
+    SCRIPT_DIR_BUILD="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+    # shellcheck source=xcp-ng-version.env
+    source "${WORK}/xcp-ng-version.env" 2>/dev/null \
+        || source "${SCRIPT_DIR_BUILD}/xcp-ng-version.env" 2>/dev/null \
+        || { echo "ERROR: xcp-ng-version.env not found and XCP_NG_VERSION not set"; exit 1; }
+fi
+XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # e.g. 8.3.0-20250606 → 8.3
 
 # Strategy: Download BOTH ISOs
 # - netinstall (~164MB) for QEMU boot (lighter, faster)

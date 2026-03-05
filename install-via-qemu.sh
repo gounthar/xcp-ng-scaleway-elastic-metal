@@ -72,8 +72,14 @@ set -euo pipefail
 #     Must set GRUB default to first Xen entry after generating grub.cfg.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-export XCP_NG_VERSION="${XCP_NG_VERSION:-8.3.0-20250606}"
-XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # 8.3.0-20250606 → 8.3
+# Load XCP-ng version from shared env file (single source of truth)
+if [ -z "${XCP_NG_VERSION:-}" ]; then
+    # shellcheck source=xcp-ng-version.env
+    source "${SCRIPT_DIR}/xcp-ng-version.env" \
+        || { echo "ERROR: xcp-ng-version.env not found and XCP_NG_VERSION not set"; exit 1; }
+fi
+export XCP_NG_VERSION
+XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # e.g. 8.3.0-20250606 → 8.3
 LOG_FILE="/tmp/xcp-ng-install.log"
 SERIAL_LOG="/tmp/qemu-xcpng-serial.log"
 WORK_DIR="${WORK_DIR:-$SCRIPT_DIR}"
