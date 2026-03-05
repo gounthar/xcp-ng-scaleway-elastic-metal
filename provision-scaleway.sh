@@ -732,7 +732,78 @@ do_teardown() {
 # =========================================================================
 # MAIN
 # =========================================================================
+do_preflight() {
+    log "=== Preflight checks ==="
+    local ok=true
+
+    # Check required CLI tools
+    for cmd in scw ssh sshpass jq curl python3 openssl; do
+        if command -v "$cmd" &>/dev/null; then
+            log "  $cmd: OK ($(command -v "$cmd"))"
+        else
+            log "  $cmd: MISSING — install with: sudo apt-get install $cmd"
+            ok=false
+        fi
+    done
+
+    # Check SSH key
+    if [ -f "$SSH_KEY_PATH" ]; then
+        log "  SSH key: OK ($SSH_KEY_PATH)"
+    else
+        log "  SSH key: MISSING ($SSH_KEY_PATH)"
+        log "    Generate with: ssh-keygen -t ed25519 -f $SSH_KEY_PATH"
+        ok=false
+    fi
+    if [ -f "${SSH_KEY_PATH}.pub" ]; then
+        log "  SSH public key: OK (${SSH_KEY_PATH}.pub)"
+    else
+        log "  SSH public key: MISSING (${SSH_KEY_PATH}.pub)"
+        ok=false
+    fi
+
+    # Check Scaleway CLI auth
+    if scw account ssh-key list -o json &>/dev/null; then
+        log "  Scaleway auth: OK"
+    else
+        log "  Scaleway auth: FAILED — run: scw init"
+        ok=false
+    fi
+
+    # Check zone availability
+    if scw baremetal offer list zone="$ZONE" -o json 2>/dev/null | python3 -c "
+import sys,json
+offers=json.load(sys.stdin)
+found=[o for o in offers if '$SERVER_TYPE' in o.get('name','')]
+sys.exit(0 if found else 1)
+" 2>/dev/null; then
+        log "  Server type $SERVER_TYPE in $ZONE: OK"
+    else
+        log "  Server type $SERVER_TYPE in $ZONE: NOT FOUND or zone unavailable"
+        ok=false
+    fi
+
+    # Check companion scripts
+    for f in install-via-qemu.sh build-iso.sh answerfile.xml xcp-ng-version.env; do
+        if [ -f "$SCRIPT_DIR/$f" ]; then
+            log "  $f: OK"
+        else
+            log "  $f: MISSING in $SCRIPT_DIR"
+            ok=false
+        fi
+    done
+
+    if [ "$ok" = "true" ]; then
+        log ""
+        log "All preflight checks passed. Ready to provision."
+    else
+        log ""
+        log "ERROR: Some preflight checks failed. Fix the issues above before running --full."
+        exit 1
+    fi
+}
+
 case "${1:-}" in
+    --preflight) do_preflight ;;
     --create)   do_create ;;
     --rescue)   do_rescue ;;
     --install)  do_install ;;
@@ -794,8 +865,9 @@ case "${1:-}" in
         print_timing_summary
         ;;
     *)
-        echo "Usage: $0 [--create|--rescue|--install|--boot|--validate|--teardown|--full]"
+        echo "Usage: $0 [--preflight|--create|--rescue|--install|--boot|--validate|--teardown|--full]"
         echo ""
+        echo "  --preflight Check prerequisites (tools, SSH key, Scaleway auth, zone)"
         echo "  --create    Provision server with 'Custom install' (no OS)"
         echo "  --rescue    Boot into rescue mode, inject SSH key, setup sudo"
         echo "  --install   Upload scripts and run XCP-ng installation"
@@ -806,8 +878,9 @@ case "${1:-}" in
         echo ""
         echo "Each step saves state to .provision-state so you can resume after failure."
         echo "Example:"
-        echo "  $0 --full                    # Full unattended run"
-        echo "  $0 --boot && $0 --validate   # Resume from a failed boot"
+        echo "  $0 --preflight                 # Verify everything is ready"
+        echo "  $0 --full                      # Full unattended run"
+        echo "  $0 --boot && $0 --validate     # Resume from a failed boot"
         exit 1
         ;;
 esac
