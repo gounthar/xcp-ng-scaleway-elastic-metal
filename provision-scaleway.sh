@@ -100,6 +100,7 @@ print_timing_summary() {
 
 load_state() {
     if [ -f "$STATE_FILE" ]; then
+        # shellcheck source=/dev/null
         source "$STATE_FILE"
         log "Loaded state: SERVER_ID=${SERVER_ID:-}, SERVER_IP=${SERVER_IP:-}"
     else

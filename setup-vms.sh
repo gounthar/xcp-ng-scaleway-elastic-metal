@@ -52,7 +52,6 @@ set -euo pipefail
 
 SERVER_IP="${1:-}"
 SR_UUID="${2:-}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/ai-workstation}"
 
 if [ -z "$SERVER_IP" ]; then
@@ -65,11 +64,9 @@ fi
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 if [ -f "$SSH_KEY_PATH" ]; then
     SSH_CMD="ssh $SSH_OPTS -i $SSH_KEY_PATH -o IdentitiesOnly=yes root@$SERVER_IP"
-    SCP_CMD="scp $SSH_OPTS -i $SSH_KEY_PATH -o IdentitiesOnly=yes"
 else
     SSH_OPTS="$SSH_OPTS -o PubkeyAuthentication=no"
     SSH_CMD="sshpass -p changeme ssh $SSH_OPTS root@$SERVER_IP"
-    SCP_CMD="sshpass -p changeme scp $SSH_OPTS"
 fi
 
 # --- Timing instrumentation ---
@@ -89,7 +86,8 @@ timer_start() {
 }
 
 timer_end() {
-    local now=$(date +%s)
+    local now
+    now=$(date +%s)
     local elapsed=$((now - STEP_START))
     local mins=$((elapsed / 60))
     local secs=$((elapsed % 60))
@@ -302,8 +300,6 @@ timer_end
 echo ""
 echo "=== Step 5: Build preseed ISO ==="
 timer_start "Step 5: Build preseed ISO"
-# VM IP: borrowed public IP from the server's /24 (pure L2, no NAT).
-HOST_IP="$SERVER_IP"
 VM_IP="$GOLDEN_IP"
 VM_GW="$GW"
 VM_DNS="$DNS"
@@ -592,7 +588,7 @@ ensure_gateway_ip
 echo "  Waiting for install to finish..."
 INSTALL_DONE=0
 MAX_POLLS=120   # ~60 minutes at 30s intervals
-for poll_i in $(seq 1 "$MAX_POLLS"); do
+for _ in $(seq 1 "$MAX_POLLS"); do
     STATE=$($SSH_CMD "xe vm-param-get uuid=$VM_GOLDEN param-name=power-state" 2>/dev/null)
     if [ "$STATE" = "halted" ]; then
         echo "  Install complete — VM powered off."

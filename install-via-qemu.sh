@@ -361,6 +361,7 @@ phase_end "HTTP repo setup"
 phase_start "QEMU install"
 log "=== Step 5: Launch QEMU installer ==="
 
+# shellcheck disable=SC2054  # Commas are QEMU argument syntax, not array separators
 QEMU_ARGS=(
     -enable-kvm
     -m 24576                                    # 24GB RAM (leave 8GB for host)
@@ -916,6 +917,7 @@ phase_start "Validation QEMU"
 log "=== Step 8: Pre-reboot validation ==="
 log "Booting installed system inside QEMU (no ISO)..."
 
+# shellcheck disable=SC2054  # Commas are QEMU argument syntax, not array separators
 VALIDATE_ARGS=(
     -enable-kvm
     -m 8192                                     # 8GB is enough for validation
