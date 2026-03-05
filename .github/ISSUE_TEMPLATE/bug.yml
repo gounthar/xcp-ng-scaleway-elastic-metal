@@ -1,0 +1,56 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please fill in as much detail as you can.
+
+  - type: input
+    id: script
+    attributes:
+      label: Script
+      description: Which script is affected?
+      placeholder: "e.g. install-via-qemu.sh, setup-vms.sh, provision-scaleway.sh"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Paste any error messages or log excerpts.
+      render: shell
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        - Scaleway offer (e.g. EM-A116X-SSD)
+        - Zone (e.g. fr-par-1)
+        - Server vendor/model if known (e.g. Dell PowerEdge R220)
+        - XCP-ng version (from xcp-ng-version.env or `xe host-param-get uuid=... param-name=software-version`)
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to trigger the issue.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: false
