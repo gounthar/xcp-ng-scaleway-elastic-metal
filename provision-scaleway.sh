@@ -352,11 +352,11 @@ for os in json.load(sys.stdin):
     SSH_KEY_FINGERPRINT=$(ssh-keygen -lf "${SSH_KEY_PATH}.pub" 2>/dev/null | awk '{print $2}')
     SCW_SSH_KEY_ID=$(scw iam ssh-key list -o json 2>/dev/null | python3 -c "
 import sys,json
-fp='$SSH_KEY_FINGERPRINT'
+fp=sys.argv[1]
 for k in json.load(sys.stdin):
     if fp and k.get('fingerprint','') == fp:
         print(k['id']); break
-" 2>/dev/null)
+" "$SSH_KEY_FINGERPRINT" 2>/dev/null)
 
     CREATE_CMD=(scw baremetal server create "name=$SERVER_NAME" "zone=$ZONE" "type=$SERVER_TYPE" "install.os-id=$CUSTOM_OS_ID" "tags.0=RemoteAccess")
     if [ -n "$SCW_SSH_KEY_ID" ]; then
@@ -774,9 +774,9 @@ do_preflight() {
     if scw baremetal offer list zone="$ZONE" -o json 2>/dev/null | python3 -c "
 import sys,json
 offers=json.load(sys.stdin)
-found=[o for o in offers if '$SERVER_TYPE' in o.get('name','')]
+found=[o for o in offers if sys.argv[1] in o.get('name','')]
 sys.exit(0 if found else 1)
-" 2>/dev/null; then
+" "$SERVER_TYPE" 2>/dev/null; then
         log "  Server type $SERVER_TYPE in $ZONE: OK"
     else
         log "  Server type $SERVER_TYPE in $ZONE: NOT FOUND or zone unavailable"
