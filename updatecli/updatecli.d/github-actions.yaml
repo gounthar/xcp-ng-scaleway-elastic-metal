@@ -1,0 +1,63 @@
+name: "Bump GitHub Actions versions"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "updatecli-bot"
+      owner: "gounthar"
+      repository: "xcp-ng-scaleway-elastic-metal"
+      branch: "main"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+
+sources:
+  checkout:
+    name: "Get latest actions/checkout version"
+    kind: githubrelease
+    spec:
+      owner: "actions"
+      repository: "checkout"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: semver
+
+  updatecli-action:
+    name: "Get latest updatecli-action version"
+    kind: githubrelease
+    spec:
+      owner: "updatecli"
+      repository: "updatecli-action"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: semver
+
+targets:
+  checkout:
+    name: "Update actions/checkout in updatecli workflow"
+    kind: file
+    sourceid: checkout
+    scmid: default
+    spec:
+      file: .github/workflows/updatecli.yaml
+      matchpattern: 'uses: actions/checkout@(.*)'
+      replacepattern: 'uses: actions/checkout@{{ source "checkout" }}'
+
+  updatecli-action:
+    name: "Update updatecli-action in updatecli workflow"
+    kind: file
+    sourceid: updatecli-action
+    scmid: default
+    spec:
+      file: .github/workflows/updatecli.yaml
+      matchpattern: 'uses: updatecli/updatecli-action@(.*)'
+      replacepattern: 'uses: updatecli/updatecli-action@{{ source "updatecli-action" }}'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      title: 'chore(deps): bump GitHub Actions versions'
+      labels:
+        - dependencies
+        - automation

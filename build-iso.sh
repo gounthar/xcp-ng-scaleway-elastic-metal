@@ -24,26 +24,38 @@ set -euo pipefail
 #   - mboot.c32 APPEND format: xen.gz ... --- vmlinuz ... --- /install.img
 #   - The "--- /install.img" marker is the reliable anchor for parameter injection
 #   - GRUB cfg uses "module2 /install.img" on separate line — same marker works inline
-#   - ISO filenames include build date: xcp-ng-8.3.0-20250606-netinstall.iso
+#   - ISO filenames include build date: xcp-ng-8.3.0-YYYYMMDD-netinstall.iso
 #   - answerfile=file:///answerfile.xml means /answerfile.xml in the INITRAMFS, not the ISO
 #   - Must inject answerfile INTO install.img (initramfs), not just the ISO root
 #   - Linux supports concatenated cpio archives — append a small cpio to install.img
 
 WORK="${WORK:-/work}"
+
+# XCP-ng version — loaded from xcp-ng-version.env (single source of truth)
+# Override via env: XCP_NG_VERSION=8.3.0-20250710 bash build-iso.sh
+if [ -z "${XCP_NG_VERSION:-}" ]; then
+    SCRIPT_DIR_BUILD="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+    # shellcheck source=xcp-ng-version.env
+    source "${SCRIPT_DIR_BUILD}/xcp-ng-version.env" 2>/dev/null \
+        || source "${WORK}/xcp-ng-version.env" 2>/dev/null \
+        || { echo "ERROR: xcp-ng-version.env not found and XCP_NG_VERSION not set"; exit 1; }
+fi
+XCP_NG_MAJOR="${XCP_NG_VERSION%.*}"   # e.g. 8.3.0-20250606 → 8.3
+
 # Strategy: Download BOTH ISOs
 # - netinstall (~164MB) for QEMU boot (lighter, faster)
 # - full ISO (~631MB) extracted on host, served via HTTP to installer
 # The installer fetches packages from http://10.0.2.2:8099/ (QEMU SLIRP host)
 # This avoids the Xen dom0 CD-ROM visibility problem
-NETINSTALL_URL="https://mirrors.xcp-ng.org/isos/8.3/xcp-ng-8.3.0-20250606-netinstall.iso"
-NETINSTALL_SHA256_URL="https://mirrors.xcp-ng.org/isos/8.3/SHA256SUMS"
-FULL_ISO_URL="https://mirrors.xcp-ng.org/isos/8.3/xcp-ng-8.3.0-20250606.iso"
+NETINSTALL_URL="https://mirrors.xcp-ng.org/isos/${XCP_NG_MAJOR}/xcp-ng-${XCP_NG_VERSION}-netinstall.iso"
+NETINSTALL_SHA256_URL="https://mirrors.xcp-ng.org/isos/${XCP_NG_MAJOR}/SHA256SUMS"
+FULL_ISO_URL="https://mirrors.xcp-ng.org/isos/${XCP_NG_MAJOR}/xcp-ng-${XCP_NG_VERSION}.iso"
 NETINSTALL_FILE="${WORK}/xcp-ng-netinstall.iso"
 FULL_ISO_FILE="${WORK}/xcp-ng-full.iso"
 FULL_EXTRACT_DIR="${WORK}/full-iso-repo"
 ISO_FILE="$NETINSTALL_FILE"
 EXTRACT_DIR="${WORK}/iso-extract"
-OUTPUT_ISO="${WORK}/xcp-ng-8.3-unattended.iso"
+OUTPUT_ISO="${WORK}/xcp-ng-${XCP_NG_MAJOR}-unattended.iso"
 ANSWERFILE="${WORK}/answerfile.xml"
 
 # Validate answer file exists
@@ -250,7 +262,7 @@ if [ -n "$EFIBOOT" ]; then
 
     genisoimage -o "$OUTPUT_ISO" \
         -v -r -J --joliet-long \
-        -V "XCP-ng 8.3 Unattended" \
+        -V "XCP-ng ${XCP_NG_MAJOR} Unattended" \
         -c boot/isolinux/boot.cat \
         -b boot/isolinux/isolinux.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
@@ -260,7 +272,7 @@ else
     echo "No EFI boot image found, BIOS-only ISO"
     genisoimage -o "$OUTPUT_ISO" \
         -v -r -J --joliet-long \
-        -V "XCP-ng 8.3 Unattended" \
+        -V "XCP-ng ${XCP_NG_MAJOR} Unattended" \
         -c boot/isolinux/boot.cat \
         -b boot/isolinux/isolinux.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \

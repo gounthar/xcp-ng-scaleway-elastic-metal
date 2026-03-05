@@ -1,0 +1,44 @@
+name: "Bump XCP-ng ISO version"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "updatecli-bot"
+      owner: "gounthar"
+      repository: "xcp-ng-scaleway-elastic-metal"
+      branch: "main"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+
+sources:
+  xcpng:
+    name: "Get latest XCP-ng release"
+    kind: githubrelease
+    spec:
+      owner: "xcp-ng"
+      repository: "xcp"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: regex
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$'
+
+targets:
+  version-env:
+    name: "Update XCP_NG_VERSION in xcp-ng-version.env"
+    kind: file
+    sourceid: xcpng
+    scmid: default
+    spec:
+      file: xcp-ng-version.env
+      matchpattern: 'XCP_NG_VERSION=(.*)'
+      replacepattern: 'XCP_NG_VERSION={{ source "xcpng" }}'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      title: 'chore(deps): bump XCP-ng to {{ source "xcpng" }}'
+      labels:
+        - dependencies
+        - automation
