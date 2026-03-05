@@ -1,0 +1,44 @@
+name: "Bump Debian netinst version"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "updatecli-bot"
+      owner: "gounthar"
+      repository: "xcp-ng-scaleway-elastic-metal"
+      branch: "main"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+
+sources:
+  debian:
+    name: "Get latest Debian 12 point release from archive"
+    kind: shell
+    spec:
+      command: >-
+        curl -sfL https://cdimage.debian.org/cdimage/archive/ |
+        grep -oP '12\.\d+\.\d+/' |
+        sort -t. -k1,1n -k2,2n -k3,3n -u |
+        tail -1 |
+        tr -d '/'
+
+targets:
+  setup-vms:
+    name: "Update DEBIAN_VER in setup-vms.sh"
+    kind: file
+    sourceid: debian
+    scmid: default
+    spec:
+      file: setup-vms.sh
+      matchpattern: 'DEBIAN_VER="(.*)"'
+      replacepattern: 'DEBIAN_VER="{{ source "debian" }}"'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      title: 'chore(deps): bump Debian netinst to {{ source "debian" }}'
+      labels:
+        - dependencies
+        - automation
