@@ -4,6 +4,7 @@ set -euo pipefail
 # Provision a Scaleway Elastic Metal server and install XCP-ng end-to-end
 #
 # Usage:
+#   bash provision-scaleway.sh --preflight         # Check prerequisites before running
 #   bash provision-scaleway.sh --full              # Create → Rescue → Install → Boot → Validate
 #   bash provision-scaleway.sh --create            # Just provision the server
 #   bash provision-scaleway.sh --rescue            # Reboot into rescue mode
@@ -738,7 +739,7 @@ do_preflight() {
     local ok=true
 
     # Check required CLI tools
-    for cmd in scw ssh sshpass jq curl python3 openssl; do
+    for cmd in scw ssh sshpass curl python3 openssl; do
         if command -v "$cmd" &>/dev/null; then
             log "  $cmd: OK ($(command -v "$cmd"))"
         else
@@ -752,7 +753,7 @@ do_preflight() {
         log "  SSH key: OK ($SSH_KEY_PATH)"
     else
         log "  SSH key: MISSING ($SSH_KEY_PATH)"
-        log "    Generate with: ssh-keygen -t ed25519 -f $SSH_KEY_PATH"
+        log "    Generate with: ssh-keygen -t ed25519 -f \"$SSH_KEY_PATH\""
         ok=false
     fi
     if [ -f "${SSH_KEY_PATH}.pub" ]; then
