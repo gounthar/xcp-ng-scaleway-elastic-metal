@@ -31,6 +31,36 @@ sources:
       versionfilter:
         kind: semver
 
+  action-yamllint:
+    name: "Get latest action-yamllint version"
+    kind: githubrelease
+    spec:
+      owner: "ibiqlik"
+      repository: "action-yamllint"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: semver
+
+  action-actionlint:
+    name: "Get latest raven-actions/actionlint version"
+    kind: githubrelease
+    spec:
+      owner: "raven-actions"
+      repository: "actionlint"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: semver
+
+  action-shellcheck:
+    name: "Get latest action-shellcheck version"
+    kind: githubrelease
+    spec:
+      owner: "ludeeus"
+      repository: "action-shellcheck"
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      versionfilter:
+        kind: semver
+
 targets:
   checkout:
     name: "Update actions/checkout in updatecli workflow"
@@ -51,6 +81,46 @@ targets:
       file: .github/workflows/updatecli.yaml
       matchpattern: 'uses: updatecli/updatecli-action@(.*)'
       replacepattern: 'uses: updatecli/updatecli-action@{{ source "updatecli-action" }}'
+
+  checkout-lint:
+    name: "Update actions/checkout in lint workflow"
+    kind: file
+    sourceid: checkout
+    scmid: default
+    spec:
+      file: .github/workflows/lint.yaml
+      matchpattern: 'uses: actions/checkout@(.*)'
+      replacepattern: 'uses: actions/checkout@{{ source "checkout" }}'
+
+  action-yamllint:
+    name: "Update action-yamllint in lint workflow"
+    kind: file
+    sourceid: action-yamllint
+    scmid: default
+    spec:
+      file: .github/workflows/lint.yaml
+      matchpattern: 'uses: ibiqlik/action-yamllint@(.*)'
+      replacepattern: 'uses: ibiqlik/action-yamllint@{{ source "action-yamllint" }}'
+
+  action-actionlint:
+    name: "Update raven-actions/actionlint in lint workflow"
+    kind: file
+    sourceid: action-actionlint
+    scmid: default
+    spec:
+      file: .github/workflows/lint.yaml
+      matchpattern: 'uses: raven-actions/actionlint@(.*)'
+      replacepattern: 'uses: raven-actions/actionlint@{{ source "action-actionlint" }}'
+
+  action-shellcheck:
+    name: "Update action-shellcheck in lint workflow"
+    kind: file
+    sourceid: action-shellcheck
+    scmid: default
+    spec:
+      file: .github/workflows/lint.yaml
+      matchpattern: 'uses: ludeeus/action-shellcheck@(.*)'
+      replacepattern: 'uses: ludeeus/action-shellcheck@{{ source "action-shellcheck" }}'
 
 actions:
   default:

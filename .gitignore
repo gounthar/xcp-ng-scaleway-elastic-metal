@@ -1,0 +1,16 @@
+# Provisioning state (contains server IDs, IPs, rescue credentials)
+.provision-state
+
+# Timing and debug logs
+*.log
+provision-scaleway-timing.*
+setup-vms-timing-*
+
+# Secrets
+.env
+*.token
+*.credentials.json
+
+# Editor
+*.swp
+*~
