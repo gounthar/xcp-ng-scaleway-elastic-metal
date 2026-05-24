@@ -18,7 +18,7 @@ This is not a tutorial. It's automation built on top of thirty hours of discover
 |--------|---------|
 | `provision-scaleway.sh` | End-to-end: creates the server, installs XCP-ng, validates, tears down if something breaks |
 | `install-via-qemu.sh` | Runs on the server in rescue mode: builds the ISO, installs XCP-ng via QEMU with disk passthrough, applies bare-metal fixes |
-| `build-iso.sh` | Builds a custom XCP-ng netinstall ISO with an embedded answerfile (requires Docker) |
+| `build-iso.sh` | Builds a custom XCP-ng netinstall ISO with an embedded answerfile (runs on the rescue-mode server; can also run locally in Docker) |
 | `answerfile.xml` | Unattended install configuration for XCP-ng |
 | `setup-vms.sh` | Creates a golden template VM on the running hypervisor, clones agent VMs from it |
 
@@ -37,8 +37,7 @@ ZONE=fr-par-1 ./provision-scaleway.sh --full
 **Local machine:**
 - `scw` CLI configured with Elastic Metal access
 - SSH key at `~/.ssh/ai-workstation` (or set `SSH_KEY_PATH`)
-- `sshpass`, `jq`, `curl`
-- Docker (for `build-iso.sh`)
+- `sshpass`, `python3`, `openssl`, `curl`
 
 **Scaleway:**
 - Elastic Metal quota (EM-A116X-SSD or equivalent)
