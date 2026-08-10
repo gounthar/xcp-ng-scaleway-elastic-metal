@@ -16,12 +16,23 @@ sources:
     name: "Get latest Debian 12 point release from archive"
     kind: shell
     spec:
-      command: >-
-        curl -sfL https://cdimage.debian.org/cdimage/archive/ |
-        grep -oP '12\.\d+\.\d+/' |
-        sort -t. -k1,1n -k2,2n -k3,3n -u |
-        tail -1 |
-        tr -d '/'
+      # Piping curl straight into grep hides a failed fetch: the pipeline exits
+      # with tr's status, so an unreachable cdimage.debian.org yields an empty
+      # string that updatecli happily writes as DEBIAN_VER="".
+      command: |
+        set -eu
+        index=$(curl -sfL --retry 3 --retry-delay 5 --max-time 60 \
+          https://cdimage.debian.org/cdimage/archive/)
+        version=$(printf '%s\n' "$index" |
+          grep -oE '12\.[0-9]+\.[0-9]+/' |
+          sort -t. -k1,1n -k2,2n -k3,3n -u |
+          tail -1 |
+          tr -d '/')
+        if [ -z "$version" ]; then
+          echo "no Debian 12 point release found in the archive index" >&2
+          exit 1
+        fi
+        printf '%s' "$version"
 
 targets:
   setup-vms:
