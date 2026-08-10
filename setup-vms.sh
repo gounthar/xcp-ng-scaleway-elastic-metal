@@ -274,7 +274,7 @@ cd /var/opt/isos
 
 # Use Debian 12 Bookworm (stable, well-tested preseed, no Trixie pitfalls)
 # Bookworm is now oldstable — ISOs live in the archive
-DEBIAN_VER="12.13.0"
+DEBIAN_VER="12.15.0"
 ISO_NAME="debian-${DEBIAN_VER}-amd64-netinst.iso"
 ISO_URL="https://cdimage.debian.org/cdimage/archive/${DEBIAN_VER}/amd64/iso-cd/${ISO_NAME}"
 
