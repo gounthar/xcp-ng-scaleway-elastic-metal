@@ -4,7 +4,8 @@ scms:
   default:
     kind: github
     spec:
-      user: "updatecli-bot"
+      user: "github-actions[bot]"
+      email: "github-actions[bot]@users.noreply.github.com"
       owner: "gounthar"
       repository: "xcp-ng-scaleway-elastic-metal"
       branch: "main"
