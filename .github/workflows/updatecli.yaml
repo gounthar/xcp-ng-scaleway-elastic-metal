@@ -9,8 +9,7 @@ jobs:
   updatecli:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     if: github.repository_owner == 'gounthar'
     steps:
       - name: Checkout
@@ -28,4 +27,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: updatecli pipeline apply --config ./updatecli/updatecli.d
         env:
-          UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A PAT is required here, not GITHUB_TOKEN: pushes touching
+          # .github/workflows/ are rejected for tokens without the workflow
+          # scope, and GITHUB_TOKEN is not allowed to open pull requests.
+          UPDATECLI_GITHUB_TOKEN: ${{ secrets.UPDATECLI_PAT }}
